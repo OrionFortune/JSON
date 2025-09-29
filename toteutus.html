@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toteutus - Digitekniikat</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+  <!-- Navigaatio -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Digitekniikat</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">JSON Tietue</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="toteutus.html">Toteutus</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="pokehaku.html">Pokemon Haku</a>  
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="saa.html">Helsingin Sää</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Pääsisältö -->
+<div class="container mt-4">
+  <h1 class="text-center mb-4">Toteutuksen tiedot</h1>
+  <div class="text-center mb-4">
+    <button id="haeToteutus" class="btn btn-success btn-lg">Hae toteutuksen data</button>
+  </div>
+  <div id="toteutusVastaus" class="mt-4 p-3 border rounded bg-light">
+    <p class="text-muted text-center">Toteutuksen tiedot näkyvät tässä.</p>
+  </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+document.getElementById('haeToteutus').addEventListener('click', function() {
+  fetch('toteutus.json')
+    .then(res => {
+      if (!res.ok) throw new Error('Virhe: ' + res.status);
+      return res.json();
+    })
+    .then(data => {
+      naytaToteutus(data);
+    })
+    .catch(err => {
+      document.getElementById('toteutusVastaus').innerHTML =
+        "<p class='text-danger'>Tietoa ei pystytä hakemaan: " + err.message + "</p>";
+    });
+});
+
+function naytaToteutus(obj) {
+  let html = `
+    <h2 class="text-primary">${obj.toteutus}</h2>
+    <p><strong>Osallistujat </strong> ${obj.osallistujat_lkm}</p>
+    <p><strong>Aikaväli:</strong> ${obj.alku} – ${obj.loppu} (${obj.kesto})</p>
+    <ul class="list-group mb-3">`;
+  for (let i = 0; i < obj.osallistujat.length; i++) {
+    html += `<li class="list-group-item">${obj.osallistujat[i]}</li>`;
+  }
+  html += `</ul>
+    <img src="${obj.kuva}" alt="Kuva" class="img-fluid rounded">`;
+  document.getElementById('toteutusVastaus').innerHTML = html;
+}
+</script>
+</body>
+</html>

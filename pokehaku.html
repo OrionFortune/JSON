@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Haku - Digitekniikat</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        .pokemon-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .pokemon-image {
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigaatio -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Digitekniikat</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">JSON Tietue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="toteutus.html">Toteutus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="pokehaku.html">Pokemon Haku</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="saa.html">Helsingin Sää</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pääsisältö -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">Pokemon Haku</h1>
+                
+                <!-- Hakulaatikko -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="pokemonName" 
+                                   placeholder="Kirjoita Pokemonin nimi (esim. pikachu)" aria-label="Pokemonin nimi">
+                            <button class="btn btn-success" type="button" onclick="poke()">Hae</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pokemonin tiedot ja kuvat -->
+                <div id="pokemonTiedot">
+                    <div class="text-center text-muted">
+                        <p>Kirjoita Pokemonin nimi hakukenttään</p>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <div id="pokemonKuva"></div>
+                </div>
+
+                <!-- Käännä-painike -->
+                <div class="text-center mt-3">
+                    <button id="kaannaBtn" class="btn btn-warning" onclick="kaannaPokemon()" style="display: none;">
+                        KÄÄNNÄ POKEMON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript -->
+    <script>
+        let currentPokemonData = null;
+        let isFrontView = true;
+
+        function poke() {
+            const pokeName = document.getElementById("pokemonName").value.toLowerCase();
+            const name = document.getElementById("pokemonName").value;
+
+            if (pokeName === "") {
+                alert("Kirjoita Pokemonin nimi!");
+                return;
+            }
+
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokeName}`)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Pokemonia ei löytynyt!');
+                    }
+                    return response.json();
+                })
+                .then(function(responseJson) {
+                    currentPokemonData = responseJson;
+                    pokekuva(responseJson, name);
+                })
+                .catch(function(error) {
+                    document.getElementById("pokemonTiedot").innerHTML = 
+                        "<p class='text-danger'>Virhe: " + error.message + "</p>";
+                    document.getElementById("pokemonKuva").innerHTML = "";
+                    document.getElementById("kaannaBtn").style.display = "none";
+                });
+        }
+
+        // Pokemonin tiedot
+        function pokekuva(obj, name) {
+            let pokeurl = obj.sprites.front_default;
+            
+            let tiedot = "<div class='pokemon-card' style='display: block;'>" +
+                        "<h3 class='text-primary'>" + name.charAt(0).toUpperCase() + name.slice(1) + "</h3>" +
+                        "<p><strong>Tunnus:</strong> #" + obj.id + "</p>" +
+                        "<p><strong>Kokoisuus:</strong> " + obj.height + " dm</p>" +
+                        "<p><strong>Paino:</strong> " + obj.weight + " kg</p>" +
+                        "<p><strong>Tyypit:</strong> ";
+        
+            for (let i = 0; i < obj.types.length; i++) {
+                tiedot += obj.types[i].type.name;
+                if (i < obj.types.length - 1) {
+                    tiedot += ", ";
+                }
+            }
+            
+            tiedot += "</p></div>";
+            
+            document.getElementById("pokemonTiedot").innerHTML = tiedot;
+            document.getElementById("pokemonKuva").innerHTML = "<img src='" + pokeurl + "' class='pokemon-image' alt='" + name + "'>";
+            
+            // Käännä-painike
+            document.getElementById("kaannaBtn").style.display = "block";
+            isFrontView = true;
+            
+            document.getElementById("pokemonName").value = "";
+        }
+
+        // Pokemonin kääntö
+        function kaannaPokemon() {
+            if (!currentPokemonData) return;
+            
+            let pokeurl;
+            if (isFrontView) {
+                pokeurl = currentPokemonData.sprites.back_default || currentPokemonData.sprites.front_default;
+            } else {
+                pokeurl = currentPokemonData.sprites.front_default;
+            }
+            
+            document.getElementById("pokemonKuva").innerHTML = "<img src='" + pokeurl + "' class='pokemon-image' alt='Pokemon'>";
+            isFrontView = !isFrontView;
+        }
+
+        document.getElementById("pokemonName").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                poke();
+            }
+        });
+    </script>
+</body>
+</html>

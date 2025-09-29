@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Tehtävä - Digitekniikat</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+</head>
+<body>
+
+    <!-- Navigaatio -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Digitekniikat</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">JSON Tietue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="toteutus.html">Toteutus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pokehaku.html">Pokemon Haku</a>  
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="saa.html">Helsingin Sää</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pääsisältö -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">JSON-datan käsittely</h1>
+                <p class="lead text-center">Tälle sivustolle haetaan JSON-muotoista dataa</p>
+                
+                <!-- Datan haku -->
+                <div class="text-center mb-4">
+                    <button id="haeTiedot" class="btn btn-success btn-lg">Hae JSON-data</button>
+                </div>
+                
+                <!-- Tänne tulee data -->
+                <div id="vastaus" class="mt-4 p-3 border rounded bg-light">
+                    <p class="text-muted text-center">Data tulee näkyviin kun painat nappia</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript -->
+    <script>
+        document.getElementById('haeTiedot').addEventListener('click', function() {
+            haeJSONData();
+        });
+
+        function haeJSONData() {
+            fetch('tietue.JSON')
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Verkkovirhe: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(responseJson) {
+                    kerro(responseJson);
+                })
+                .catch(function(error) {
+                    document.getElementById("vastaus").innerHTML = 
+                        "<p class='text-danger'>Tietoa ei löydy: " + error.message + "</p>";
+                });
+
+        }
+        function kerro(obj) {
+            let tiedot = "<h1 class='text-primary'>" + obj.otsikko + "</h1>" + 
+                         "<p class='lead'>" + obj.kuvaus + "</p>" +
+                         "<hr>" +
+                         "<div class='text-center'><img src='" + obj.kuva + "' class='img-fluid rounded' alt='Kuva'></div>" +
+                         "<div class='mt-4'>" +
+                         "<h3 class='text-success'>Opintojakso</h3>" +
+                         "<p><strong>Nimi:</strong> " + obj.opintojakso.nimi + "</p>" +
+                         "<p><strong>Tunnus:</strong> " + obj.opintojakso.tunnus + "</p>" +
+                         "<p><strong>Opintopisteet:</strong> " + obj.opintojakso.opintopisteet + "</p>" +
+                         "</div>" +
+                         "<div class='mt-4'>" +
+                         "<h3 class='text-success'>Aiheet</h3>";
+
+            for (var i = 0; i < obj.tekniikat.length; i++) {
+                tiedot += "<div class='mb-2'>" +
+                         "<strong>Aihe: " + obj.tekniikat[i].aihe + "</strong>" +
+                         " - <a href='" + obj.tekniikat[i].linkki + "' target='_blank' class='text-decoration-none'>" + 
+                         "Linkki </a>" +
+                         "</div>";
+            }
+            
+            tiedot += "</div>";
+            document.getElementById("vastaus").innerHTML = tiedot;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sää Tiedot - Digitekniikat</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        .weather-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+        }
+        .weather-info {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .current-time {
+            background: #545561;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigaatio -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Digitekniikat</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">JSON Tietue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="toteutus.html">Toteutus</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pokehaku.html">Pokemon Haku</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="saa.html">Helsingin Sää</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pääsisältö -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">Helsingin Sää Tiedot</h1>
+                
+                <!-- Nykyinen aika -->
+                <div class="current-time text-center">
+                    <h4 id="currentTime">Ladataan aikaa...</h4>
+                </div>
+
+                <!-- Tänne tulee säätiedot -->
+                <div id="saaTiedot" class="weather-card" style="display: none;">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <img id="saaKuva" src="" alt="Sääkuva" class="weather-icon">
+                            <h3 id="saaKuvaus" class="mt-2"></h3>
+                        </div>
+                        <div class="col-md-8">
+                            <h2 id="kaupunkiNimi" class="mb-3"></h2>
+                            <div class="weather-info">
+                                <h4 id="lampotila" class="mb-0"></h4>
+                            </div>
+                            <div class="weather-info">
+                                <p><strong>Tuulen nopeus:</strong> <span id="tuuliNopeus"></span> m/s</p>
+                                <p><strong>Ilmanpaine:</strong> <span id="paine"></span> hPa</p>
+                                <p><strong>Ilmankosteus:</strong> <span id="kosteus"></span>%</p>
+                            </div>
+                            <div class="weather-info">
+                                <p><strong>Näkyvyys:</strong> <span id="nakyvyys"></span> metriä</p>
+                                <p><strong>Pilvisyys:</strong> <span id="pilvisyys"></span>%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript -->
+    <script>
+        // Nykyinen aika 
+        function paivitaAika() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit'
+            };
+            document.getElementById('currentTime').textContent = now.toLocaleDateString('fi-FI', options);
+        }
+
+        // Haetaan säätiedot
+        function haeSaaTiedot() {
+            const apiUrl = 'https://api.openweathermap.org/data/2.5/weather?id=658225&appid=665ecd56dfc08dbb50feb8b8f5034e28&lang=fi&units=metric';
+
+            fetch(apiUrl)
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Sääpalvelu ei vastaa');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    naytaSaaTiedot(data);
+                })
+                .catch(function(error) {
+                    console.error('Virhe:', error);
+                    document.getElementById('virheViesti').style.display = 'block';
+                    document.getElementById('saaTiedot').style.display = 'none';
+                });
+        }
+
+        // Näytetään säätiedot
+        function naytaSaaTiedot(data) {
+
+            document.getElementById('kaupunkiNimi').textContent = data.name + ', Suomi';
+            document.getElementById('lampotila').textContent = '🌡 ' + Math.round(data.main.temp) + '°C';
+            document.getElementById('tuuliNopeus').textContent = data.wind.speed;
+            document.getElementById('paine').textContent = data.main.pressure;
+            document.getElementById('kosteus').textContent = data.main.humidity;
+            document.getElementById('nakyvyys').textContent = data.visibility;
+            document.getElementById('pilvisyys').textContent = data.clouds.all;
+
+            // Sääkuvaus ja ikoni
+            const saaKuvaus = data.weather[0].description;
+            document.getElementById('saaKuvaus').textContent = saaKuvaus.charAt(0).toUpperCase() + saaKuvaus.slice(1);
+            
+            const iconCode = data.weather[0].icon;
+            document.getElementById('saaKuva').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+            document.getElementById('saaKuva').alt = saaKuvaus;
+
+            // Säätiedot
+            document.getElementById('saaTiedot').style.display = 'block';
+            document.getElementById('virheViesti').style.display = 'none';
+
+            paivitaAika();
+        }
+
+        // Alustetaan sivu
+        document.addEventListener('DOMContentLoaded', function() {
+            paivitaAika();
+            setInterval(paivitaAika, 1000);
+            
+            haeSaaTiedot();
+        });
+    </script>
+</body>
+</html>
